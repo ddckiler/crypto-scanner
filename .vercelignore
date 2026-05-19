@@ -1,0 +1,5 @@
+scanner.py
+setup_cron.sh
+scanner.log
+.github/
+.env

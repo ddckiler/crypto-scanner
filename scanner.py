@@ -2,6 +2,7 @@
 """Crypto Scanner — отримує дані з CoinGecko, аналізує через Claude
 з урахуванням балансу та ризик-менеджменту, надсилає сигнали в Telegram."""
 
+import json
 import logging
 import os
 import sys
@@ -53,18 +54,22 @@ COINS = {
 SIGNAL_EMOJI = {"LONG": "🟢", "SHORT": "🔴", "ЧЕКАТИ": "⚪"}
 
 
-def send_telegram(text: str) -> None:
+SCAN_BUTTON_MARKUP = json.dumps({
+    "inline_keyboard": [[{"text": "🔄 Сканувати зараз", "callback_data": "scan_now"}]]
+})
+
+
+def send_telegram(text: str, with_button: bool = True) -> None:
     url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
-    resp = requests.post(
-        url,
-        data={
-            "chat_id": TELEGRAM_CHAT_ID,
-            "text": text,
-            "parse_mode": "HTML",
-            "disable_web_page_preview": "true",
-        },
-        timeout=30,
-    )
+    payload = {
+        "chat_id": TELEGRAM_CHAT_ID,
+        "text": text,
+        "parse_mode": "HTML",
+        "disable_web_page_preview": "true",
+    }
+    if with_button:
+        payload["reply_markup"] = SCAN_BUTTON_MARKUP
+    resp = requests.post(url, data=payload, timeout=30)
     resp.raise_for_status()
 
 
